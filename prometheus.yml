@@ -1,16 +1,20 @@
-global:
-  scrape_interval:     15s
-  evaluation_interval: 15s
+1. Install Docker
+	curl -s https://raw.githubusercontent.com/jaintpharsha/install/main/docker | sudo bash
 
-rule_files:
-  # - "first.rules"
-  # - "second.rules"
+2. Clone Prometheus-grafana setup repo 
+	git clone https://github.com/harshaprakash100/prometheus_grafana.git
 
-scrape_configs:
-  - job_name: prometheus
-    static_configs:
-      - targets: ['localhost:9090']
-  - job_name: app
-    scrape_interval: 5s
-    static_configs:
-      - targets: ['host.docker.internal:10088']
+3. Run promethes grafana CAdvisor alertmanager node-exporter
+    docker compose up -d 
+    
+4. Add new scrap_configs in prometheus/prometheus.yml
+   Restart the prometheus container to apply new scrap configurations
+
+5. To access Prometheus Dashboard 
+    <public_ip>:9090
+    
+   To check all the prometheus scraps targets 
+    <public_ip>:9090/targets 
+    
+   To access Grafana Dashboard 
+    <public_ip>:3000
