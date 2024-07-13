@@ -1,7 +1,7 @@
 
 # Prometheus and Grafana
-** This is a collection of configuration files for docker compose stacks for Prometheus, node-exporter, CAdvisor, AlertManager and Grafana.
-It becomes handy when you want to run a stack of docker containers and you don't want to run many command. **
+This is a collection of configuration files for docker compose stacks for Prometheus, node-exporter, CAdvisor, AlertManager and Grafana.
+It becomes handy when you want to run a stack of docker containers and you don't want to run many command. 
 
 
 ## Method:1 Prometheus and Grafana Installation from personalised docker compose file:
@@ -25,53 +25,132 @@ docker compose up -d
 
 ## Demo
 
-**1. To access Prometheus Dashboard:** <public_ip>:9090
-    
-**2. To check all the prometheus scraps targets:** <public_ip>:9090/targets 
-    
-**3. To access Grafana Dashboard:** <public_ip>:3000 <br/>
-  **Note:** username and password configuration file: grafana/config.monitoring
+  1. To access Prometheus Dashboard:** <public_ip>:9090
+      
+  2. To check all the prometheus scraps targets:** <public_ip>:9090/targets 
+      
+  3. To access Grafana Dashboard:** <public_ip>:3000 <br/>
+    **Note:** username and password configuration file: grafana/config.monitoring
 
 
-# kube-state-metrics Installation
+# Installing (using Helm) and Configuring Prometheus, Alertmanager and Grafana in Kubernetes Cluster
+  Ref: https://github.com/DinmaMerciBoi/Prometheus-Alertmanager-Grafana/blob/main/README.md 
 
-### 1. Install Kube-State-Metrics objects in K8S cluster
-	
-Installing using Manifest
+# 1. Install Helm in Kubernetes cluster
+
+Run these commands to install helm
+Reference: `https://helm.sh/docs/intro/install/`
 ```bash
-git clone https://github.com/kubernetes/kube-state-metrics && \
-kubectl apply -f kube-state-metrics/examples/standard/
-```	
-Installing using Helm Charts
-```bash
-helm repo add prometheus-community https://prometheus-community.github.io/helm-chartshelm repo updatehelm install kube-state-metrics prometheus-community/kube-state-metrics -n kube-system
+curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
+chmod 700 get_helm.sh
+./get_helm.sh
 ```
 
-Expose state-metrics with NodePort 
+# 2. Install Prometheus in Kubernetes Cluster using Helm
+
+## a. Add Prometheus Helm Charts
 ```bash
-kubectl expose service -n kube-system kube-state-metrics --type=NodePort --target-port=8080 --name=kube-state-metrics-np
+helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+helm repo update
+```
+To search the repository, run:
+```bash
+helm search repo prometheus-community
+```
+## b. Install Prometheus
+```bash
+helm install [RELEASE_NAME] prometheus-community/prometheus -f prometheus.yaml
+helm install prometheus prometheus-community/prometheus -f prometheus.yaml
+```
+The command above would do the following:
+  * Install Prometheus-Server, Alert Manager, Kube-State-Metrics, Node-Exporter and PushGateway
+  * Add configurations to the Prometheus Server to set custom alerting rules. You may add as many rules as required in to the file.
+  * The file `prometheus.yaml` is found within this repository.
+
+## c. Access the Prometheus Server UI
+This can be done in multiple ways:
+  * Using the command provided when you run the `helm install...`
+    ```bash
+    export POD_NAME=$(kubectl get pods --namespace default -l "app.kubernetes.io/name=prometheus,app.kubernetes.io/instance=prometheus" -o jsonpath="{.items[0].metadata.name}")
+    kubectl --namespace default port-forward $POD_NAME 9090
+    ```
+  * Using the `kubectl expose` command
+    ```bash
+    kubectl expose service prometheus-server --type=NodePort --target-port=9090 --name=prometheus-server-access
+    ```
+  * Using Ingress - to be treated later!
+When you access the Prometheus Server, you would appreciate the set alerting rules among other features.
+
+## d. Access the Alert Manager Server
+This can be done in multiple ways:
+  * Using the command provided when you run the `helm install...`
+    ```bash
+    export POD_NAME=$(kubectl get pods --namespace default -l "app.kubernetes.io/name=alertmanager,app.kubernetes.io/instance=prometheus" -o jsonpath="{.items[0].metadata.name}")
+    kubectl --namespace default port-forward $POD_NAME 9093
+    ```
+  * Using the `kubectl expose` command
+    ```bash
+    kubectl expose service prometheus-alertmanager --type=NodePort --target-port=9093 --name=alertmanager-access
+    ```
+  * Using Ingress - to be treated later!
+When you access the Alert Manager, you would appreciate the set alerts if any, among other features.
+
+## e. Configure Alert Manager for Email Notifications
+  * Get the configmap being used by Alert Manager
+    ```bash
+    kubectl get configmaps
+    ```
+  * Edit the configmap
+    ```bash
+    kubectl edit configmap prometheus-alertmanager
+    ```
+  * Add the content of the `prometheus-alert.yaml` found in this repository
+  * Save and quit.
+  * Refresh the alert manager access by doing these:
+    - Delete the alert manager pod
+      ```bash
+      kubectl delete pod prometheus-alertmanager-0
+      ```
+    - Because Alert Manager is deployed as a Stateful Set, the pod would be recreated automatically. Check!
+    - Refresh the URL and note the changes in `Status` tab
+    - Once there is an alert, you would receive an email notification.
+
+# 3. Install Grafana
+
+## a. Add Grafana Helm Charts
+```bash
+helm repo add grafana https://grafana.github.io/helm-charts
+helm repo update
+```
+To search the repository, run:
+```bash
+helm search repo grafana
+```
+## b. Install Grafana
+```bash
+helm install [RELEASE_NAME] grafana/grafana
+helm install grafana grafana/grafana
 ```
 
-### 2. Add scrap configuration in prometheus/prometheus.yaml
-```yml
-- job_name: 'kube-state-metrics'
-    scrape_interval: 5s
-    honor_timestamps: true
-    metrics_path: /metrics
-    static_configs:
-      - targets: ['<k8s_node_public_ip>:<NodePort>']
-    metric_relabel_configs:
-      - target_label: cluster
-        replacement: ITDK8sCluster
-```
-Restart Prometheus container to apply scrap configuration
-```bash
-sudo docker restart <prometheus_container>
-```
+## c. Access the Grafana UI
+This can be done in multiple ways:
+  * Using the command provided when you run the `helm install...`
+    ```bash
+    export POD_NAME=$(kubectl get pods --namespace default -l "app.kubernetes.io/name=grafana,app.kubernetes.io/instance=grafana" -o jsonpath="{.items[0].metadata.name}")
+    kubectl --namespace default port-forward $POD_NAME 3000
+    ```
+  * Using the `kubectl expose` command
+    ```bash
+    kubectl expose service grafana --type=NodePort --target-port=3000 --name=grafana-access
+    ```
+  * Using Ingress - to be treated later!
+  * Retrieve the `admin` password to login
+    ```bash
+    kubectl get secret --namespace default grafana -o jsonpath="{.data.admin-password}" | base64 --decode ; echo
+    ```
+  * With username `admin` and the password from the above command, login!
+  * Add Data Source
+  * Import Dashboards - 6417, 3119, 8919, 7249, 11074 etc
+When you access the Grafana UI, you would appreciate the different components.
 
-### 3. In grafana Add data source with promethes server url and create dashboard with ID: 13332
-```bash
-13332
-```
 
-### 4. Please wait for some time to allow the data to be reflected in the Grafana dashboard.
