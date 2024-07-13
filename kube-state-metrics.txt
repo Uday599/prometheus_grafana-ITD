@@ -24,6 +24,9 @@
       - target_label: cluster
         replacement: ITDK8sCluster
 
-  Restart Prometheus container and check logs 
+3. Restart Prometheus container to apply scrap configuration
 
-3. In grafana Add data source with promethes server url and create dashboard with ID: 13332
+sudo docker restart <prometheus_container>
+
+4. In grafana Add data source with promethes server url and create dashboard with ID: 13332
+5. Please wait for some time to allow the data to be reflected in the Grafana dashboard.
