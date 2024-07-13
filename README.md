@@ -21,6 +21,7 @@ docker compose up -d
 ```
   4. Add new scrap_configs in prometheus/prometheus.yml
    Restart the prometheus container to apply new scrap configurations
+  Ref: https://github.com/Uday599/prometheus_grafana-ITD/blob/main/kube-state-metrics.txt 
 
 ## Demo
 
