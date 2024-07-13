@@ -4,22 +4,22 @@ This is a collection of configuration files for docker compose stacks for Promet
 It becomes handy when you want to run a stack of docker containers and you don't want to run many command.
 
 
-# Prometheus and Grafana Installation
+# Prometheus and Grafana Installation from personalised docker compose file:
 
-### 1. Install Docker
+  1. Install Docker
 ```bash
 curl -s https://raw.githubusercontent.com/jaintpharsha/install/main/docker | sudo bash
 ```
-### 2. Clone Prometheus-grafana setup repo 
+  2. Clone Prometheus-grafana setup repo 
 ```bash
 git clone https://github.com/harshaprakash100/prometheus_grafana.git && cd ./prometheus_grafana
 ```
 
-### 3. Run promethes grafana CAdvisor alertmanager node-exporter
+  3. Run promethes grafana CAdvisor alertmanager node-exporter
 ```bash    
 docker compose up -d 
 ```
-### 4. Add new scrap_configs in prometheus/prometheus.yml
+  4. Add new scrap_configs in prometheus/prometheus.yml
    Restart the prometheus container to apply new scrap configurations
 
 ## Demo
