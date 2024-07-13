@@ -4,7 +4,7 @@ This is a collection of configuration files for docker compose stacks for Promet
 It becomes handy when you want to run a stack of docker containers and you don't want to run many command.
 
 
-# Prometheus and Grafana Installation from personalised docker compose file:
+## Method:1 Prometheus and Grafana Installation from personalised docker compose file:
 
   1. Install Docker
 ```bash
@@ -25,11 +25,11 @@ docker compose up -d
 
 ## Demo
 
-**To access Prometheus Dashboard:** <public_ip>:9090
+**1. To access Prometheus Dashboard:** <public_ip>:9090
     
-**To check all the prometheus scraps targets:** <public_ip>:9090/targets 
+**2. To check all the prometheus scraps targets:** <public_ip>:9090/targets 
     
-**To access Grafana Dashboard:** <public_ip>:3000 <br/>
+**3. To access Grafana Dashboard:** <public_ip>:3000 <br/>
   **Note:** username and password configuration file: grafana/config.monitoring
 
 
