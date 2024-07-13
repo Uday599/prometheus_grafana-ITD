@@ -1,7 +1,7 @@
 
 # Prometheus and Grafana
-This is a collection of configuration files for docker compose stacks for Prometheus, node-exporter, CAdvisor, AlertManager and Grafana.
-It becomes handy when you want to run a stack of docker containers and you don't want to run many command.
+** This is a collection of configuration files for docker compose stacks for Prometheus, node-exporter, CAdvisor, AlertManager and Grafana.
+It becomes handy when you want to run a stack of docker containers and you don't want to run many command. **
 
 
 ## Method:1 Prometheus and Grafana Installation from personalised docker compose file:
